@@ -308,6 +308,11 @@ def download_video_worker():
                 continue
             video_path = download_video(config)
             play_video_queue.put((config, video_path))
+        except Exception as e:
+            # Never let a single failed download kill the worker thread;
+            # otherwise every subsequent video silently fails to download.
+            logging.exception(f"Failed to download video: {e}")
+            write_log_to_client(f"Failed to download video: {e}")
         finally:
             download_url_queue.task_done()
 
